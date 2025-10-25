@@ -1,5 +1,5 @@
 // --- 1. 설정: 여기에 API 키를 입력하세요 ---
-const API_KEY = "";
+const API_KEY = "AIzaSyDIqTnuRmi-96LE4efvz5F0rtOLBzGY5Vc";
 // ------------------------------------
 
 // DOM 요소 가져오기
@@ -228,3 +228,4 @@ function displayResults(items) {
     updateVideoCount();
 
 }
+
