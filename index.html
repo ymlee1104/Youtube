@@ -16,6 +16,10 @@
             <button id="searchButton">검색</button>
         </div>
 
+        <button id="playSelectedButton" class="hidden">
+            ▶️ 선택한 영상 연속 재생 (새 탭)
+        </button>
+
         <div class="filters">
             <div class="filter-group">
                 <label for="dateFilter">📅 날짜</label>
@@ -28,12 +32,7 @@
                     <option value="custom">사용자 지정</option>
                 </select>
             </div>
-            <div id="customDateInputs" class="custom-date hidden">
-                <input type="date" id="startDate" title="시작 날짜">
-                <span>~</span>
-                <input type="date" id="endDate" title="종료 날짜">
-            </div>
-
+            
             <div class="filter-group">
                 <label for="durationFilter">⏱️ 영상 길이</label>
                 <select id="durationFilter">
@@ -42,6 +41,12 @@
                     <option value="medium">Medium (4~20분)</option>
                     <option value="long">Long (20분 초과)</option>
                 </select>
+            </div>
+            
+            <div id="customDateInputs" class="custom-date hidden">
+                <input type="date" id="startDate" title="시작 날짜">
+                <span>~</span>
+                <input type="date" id="endDate" title="종료 날짜">
             </div>
         </div>
 
@@ -60,6 +65,11 @@
         <div id="loading" class="hidden">
             <div class="spinner"></div>
             <span>검색 중...</span>
+        </div>
+
+        <div id="selectAllContainer" class="hidden">
+            <input type="checkbox" id="selectAllCheckbox">
+            <label for="selectAllCheckbox">전체 선택</label>
         </div>
 
         <div id="results">
