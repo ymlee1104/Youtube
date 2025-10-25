@@ -110,7 +110,7 @@ async function performSearch() {
         part: "snippet",
         q: query,
         type: "video",
-        maxResults: 30, // ⭐️ 검색 결과 갯수 30개로 수정 (원하시면 25로 되돌리세요)
+        maxResults: 50, // ⭐️ 검색 결과 갯수 30개로 수정 (원하시면 25로 되돌리세요)
         key: API_KEY
     });
 
@@ -228,4 +228,5 @@ function displayResults(items) {
     updateVideoCount();
 
 }
+
 
