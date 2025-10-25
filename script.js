@@ -13,7 +13,6 @@ const playSelectedButton = document.getElementById("playSelectedButton");
 const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
 
-// ⭐️ (추가) 카운터 span
 const videoCountSpan = document.getElementById("videoCount");
 
 // 필터 요소
@@ -58,7 +57,7 @@ playSelectedButton.addEventListener("click", () => {
 });
 
 
-// ⭐️ (추가) 선택된/전체 영상 갯수 업데이트 함수
+// 선택된/전체 영상 갯수 업데이트 함수
 function updateVideoCount() {
     const selectedCount = document.querySelectorAll(".queue-checkbox:checked").length;
     const totalCount = document.querySelectorAll(".queue-checkbox").length;
@@ -70,16 +69,16 @@ function updateVideoCount() {
     }
 }
 
-// '전체 선택' 체크박스 이벤트 (수정)
+// '전체 선택' 체크박스 이벤트
 selectAllCheckbox.addEventListener("change", () => {
     const allCheckboxes = document.querySelectorAll(".queue-checkbox");
     allCheckboxes.forEach(box => {
         box.checked = selectAllCheckbox.checked;
     });
-    updateVideoCount(); // ⭐️ (추가) 카운터 업데이트
+    updateVideoCount(); // 카운터 업데이트
 });
 
-// ⭐️ (추가) 개별 체크박스 클릭 시 카운터 업데이트 (이벤트 위임)
+// 개별 체크박스 클릭 시 카운터 업데이트 (이벤트 위임)
 resultsDiv.addEventListener("change", (event) => {
     if (event.target.classList.contains("queue-checkbox")) {
         updateVideoCount();
@@ -89,7 +88,7 @@ resultsDiv.addEventListener("change", (event) => {
 
 // YouTube API 검색 실행 (수정)
 async function performSearch() {
-    const query = searchTerm.value;
+    let query = searchTerm.value; // ⭐️ 'const' -> 'let'으로 변경
     if (!query) {
         alert("검색어를 입력하세요.");
         return;
@@ -100,17 +99,23 @@ async function performSearch() {
         return;
     }
 
+    // ⭐️ (추가) AND/OR 연산자 처리
+    // 1. " or " (양쪽에 공백, 대소문자 무관) -> " | " (YouTube API OR 연산자)
+    query = query.replace(/\s+or\s+/gi, " | ");
+    // 2. " and " (양쪽에 공백, 대소문자 무관) -> " " (YouTube API 기본 AND 연산자)
+    query = query.replace(/\s+and\s+/gi, " ");
+
     resultsDiv.innerHTML = "";
-    videoCountSpan.textContent = ""; // ⭐️ (추가) 검색 시작 시 카운터 초기화
+    videoCountSpan.textContent = ""; // 검색 시작 시 카운터 초기화
     loadingDiv.classList.remove("hidden");
     playSelectedButton.classList.add("hidden"); 
     selectAllContainer.classList.add("hidden"); 
 
     const params = new URLSearchParams({
         part: "snippet",
-        q: query,
+        q: query, // ⭐️ 수정된 검색어 사용
         type: "video",
-        maxResults: 50, // ⭐️ 검색 결과 갯수 30개로 수정 (원하시면 25로 되돌리세요)
+        maxResults: 30, 
         key: API_KEY
     });
 
@@ -163,7 +168,7 @@ async function performSearch() {
     }
 }
 
-// 기피 키워드/채널 필터링 함수 (동일)
+// 기피 키워드/채널 필터링 함수
 function filterClientSide(items) {
     const avoidKeywords = avoidKeywordsInput.value.split(",")
         .map(k => k.trim().toLowerCase()).filter(k => k);
@@ -185,13 +190,13 @@ function filterClientSide(items) {
     });
 }
 
-// 검색 결과 화면에 표시 (수정)
+// 검색 결과 화면에 표시
 function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
         playSelectedButton.classList.add("hidden");
         selectAllContainer.classList.add("hidden"); 
-        updateVideoCount(); // ⭐️ (추가) 카운터 0/0 -> ""으로 비우기
+        updateVideoCount(); // 카운터 0/0 -> ""으로 비우기
         return;
     }
 
@@ -224,9 +229,6 @@ function displayResults(items) {
         resultsDiv.innerHTML += videoElement;
     });
 
-    // ⭐️ (추가) 모든 결과가 표시된 후, 카운터 초기화 (예: "0 / 30")
+    // 모든 결과가 표시된 후, 카운터 초기화 (예: "0 / 30")
     updateVideoCount();
-
 }
-
-
