@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클린 유튜브 검색기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔍 클린 유튜브 검색기</h1>
+
+        <div class="search-box">
+            <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
+            <button id="searchButton">검색</button>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="dateFilter">📅 날짜</label>
+                <select id="dateFilter">
+                    <option value="all">전체</option>
+                    <option value="day">최근 1일</option>
+                    <option value="week">최근 1주</option>
+                    <option value="month">최근 1개월</option>
+                    <option value="year">최근 1년</option>
+                    <option value="custom">사용자 지정</option>
+                </select>
+            </div>
+            <div id="customDateInputs" class="custom-date hidden">
+                <input type="date" id="startDate" title="시작 날짜">
+                <span>~</span>
+                <input type="date" id="endDate" title="종료 날짜">
+            </div>
+
+            <div class="filter-group">
+                <label for="durationFilter">⏱️ 영상 길이</label>
+                <select id="durationFilter">
+                    <option value="any">제한 없음</option>
+                    <option value="short">Short (4분 미만)</option>
+                    <option value="medium">Medium (4~20분)</option>
+                    <option value="long">Long (20분 초과)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="avoid-filters">
+            <div class="filter-group avoid-group">
+                <label for="avoidKeywords">🚫 기피 키워드 (쉼표로 구분)</label>
+                <input type="text" id="avoidKeywords" placeholder="예: 정치, ASMR, 뉴스">
+            </div>
+
+            <div class="filter-group avoid-group">
+                <label for="avoidChannels">🔇 기피 채널 (쉼표로 구분)</label>
+                <input type="text" id="avoidChannels" placeholder="예: OOO뉴스, XXX리뷰">
+            </div>
+        </div>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <span>검색 중...</span>
+        </div>
+
+        <div id="results">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
