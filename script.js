@@ -2,16 +2,6 @@
 const API_KEY = "AIzaSyDk-HBd4OTlv605jmu-REWKIAHgde8l2JQ";
 // ------------------------------------
 
-// ⭐️ (제거) 플레이어 관련 전역 변수 모두 삭제
-// var player;
-// var ytApiReady = false;
-// var currentPlaylist = [];
-// var currentVideoIndex = 0;
-
-// ⭐️ (제거) YouTube IFrame API 관련 함수 모두 삭제
-// function onYouTubeIframeAPIReady() {}
-// function onPlayerStateChange(event) {}
-
 // DOM 요소 가져오기
 const searchButton = document.getElementById("searchButton");
 const searchTerm = document.getElementById("searchTerm");
@@ -19,11 +9,12 @@ const resultsDiv = document.getElementById("results");
 const loadingDiv = document.getElementById("loading");
 
 const playSelectedButton = document.getElementById("playSelectedButton");
-// ⭐️ (제거) const playerModal = document.getElementById("playerModal");
-// ⭐️ (제거) const closeModal = document.getElementById("closeModal");
 
 const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+
+// ⭐️ (추가) 카운터 span
+const videoCountSpan = document.getElementById("videoCount");
 
 // 필터 요소
 const dateFilter = document.getElementById("dateFilter");
@@ -53,41 +44,47 @@ searchTerm.addEventListener("keyup", (event) => {
     }
 });
 
-// ⭐️ (수정) 연속 재생 버튼 클릭 이벤트
+// 연속 재생 버튼 클릭 이벤트
 playSelectedButton.addEventListener("click", () => {
     const checkedBoxes = document.querySelectorAll(".queue-checkbox:checked");
     if (checkedBoxes.length === 0) {
         alert("연속 재생할 영상을 1개 이상 선택하세요.");
         return;
     }
-
-    // 1. 체크된 모든 비디오 ID 수집
     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
-    
-    // 2. 쉼표(,)로 ID 목록을 연결
     const videoIdString = videoIds.join(',');
-
-    // 3. YouTube '임시 재생목록' URL 생성
-    // 이 URL은 선택된 영상들로 재생목록을 만들어 youtube.com에서 바로 재생합니다.
     const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
-
-    // 4. 새 탭에서 URL 열기
     window.open(playlistUrl, '_blank');
 });
 
-// ⭐️ (제거) 모달 닫기 버튼 이벤트 삭제
-// closeModal.addEventListener("click", () => { ... });
 
-// '전체 선택' 체크박스 이벤트
+// ⭐️ (추가) 선택된/전체 영상 갯수 업데이트 함수
+function updateVideoCount() {
+    const selectedCount = document.querySelectorAll(".queue-checkbox:checked").length;
+    const totalCount = document.querySelectorAll(".queue-checkbox").length;
+
+    if (totalCount > 0) {
+        videoCountSpan.textContent = `${selectedCount} / ${totalCount}`;
+    } else {
+        videoCountSpan.textContent = ""; // 결과 없으면 비움
+    }
+}
+
+// '전체 선택' 체크박스 이벤트 (수정)
 selectAllCheckbox.addEventListener("change", () => {
     const allCheckboxes = document.querySelectorAll(".queue-checkbox");
     allCheckboxes.forEach(box => {
         box.checked = selectAllCheckbox.checked;
     });
+    updateVideoCount(); // ⭐️ (추가) 카운터 업데이트
 });
 
-// ⭐️ (제거) playVideoQueue 함수 삭제
-// function playVideoQueue(firstVideoId) { ... }
+// ⭐️ (추가) 개별 체크박스 클릭 시 카운터 업데이트 (이벤트 위임)
+resultsDiv.addEventListener("change", (event) => {
+    if (event.target.classList.contains("queue-checkbox")) {
+        updateVideoCount();
+    }
+});
 
 
 // YouTube API 검색 실행 (수정)
@@ -104,18 +101,16 @@ async function performSearch() {
     }
 
     resultsDiv.innerHTML = "";
+    videoCountSpan.textContent = ""; // ⭐️ (추가) 검색 시작 시 카운터 초기화
     loadingDiv.classList.remove("hidden");
     playSelectedButton.classList.add("hidden"); 
     selectAllContainer.classList.add("hidden"); 
 
-    // '영상 유형' 필터 로직 (제거됨)
-
-    // 1. API 요청 파라미터 구성
     const params = new URLSearchParams({
         part: "snippet",
         q: query,
         type: "video",
-        maxResults: 25,
+        maxResults: 30, // ⭐️ 검색 결과 갯수 30개로 수정 (원하시면 25로 되돌리세요)
         key: API_KEY
     });
 
@@ -190,12 +185,13 @@ function filterClientSide(items) {
     });
 }
 
-// 검색 결과 화면에 표시 (동일)
+// 검색 결과 화면에 표시 (수정)
 function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
         playSelectedButton.classList.add("hidden");
         selectAllContainer.classList.add("hidden"); 
+        updateVideoCount(); // ⭐️ (추가) 카운터 0/0 -> ""으로 비우기
         return;
     }
 
@@ -227,4 +223,7 @@ function displayResults(items) {
         `;
         resultsDiv.innerHTML += videoElement;
     });
+
+    // ⭐️ (추가) 모든 결과가 표시된 후, 카운터 초기화 (예: "0 / 30")
+    updateVideoCount();
 }
