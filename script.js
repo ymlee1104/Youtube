@@ -115,7 +115,7 @@ async function performSearch() {
         part: "snippet",
         q: query, // ⭐️ 수정된 검색어 사용
         type: "video",
-        maxResults: 30, 
+        maxResults: 50, 
         key: API_KEY
     });
 
@@ -231,4 +231,5 @@ function displayResults(items) {
 
     // 모든 결과가 표시된 후, 카운터 초기화 (예: "0 / 30")
     updateVideoCount();
+
 }
