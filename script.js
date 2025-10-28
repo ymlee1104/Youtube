@@ -15,7 +15,7 @@ const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 const durationFilter = document.getElementById("durationFilter");
 
-// ⭐️ (추가) 통계 필터 요소
+// (기존) 통계 필터 요소
 const minViewsInput = document.getElementById("minViews");
 const minLikesInput = document.getElementById("minLikes");
 const minSubscribersInput = document.getElementById("minSubscribers");
@@ -117,7 +117,7 @@ resultsDiv.addEventListener("change", (event) => {
 });
 
 
-// ⭐️ YouTube API 검색 실행 (대폭 수정) ⭐️
+// (기존) YouTube API 검색 실행
 async function performSearch() {
     const API_KEY = apiKeyInput.value; 
     let query = searchTerm.value;
@@ -213,10 +213,12 @@ async function performSearch() {
             return {
                 ...item,
                 statistics: {
-                    viewCount: parseInt(videoStats.viewCount || 0),
-                    likeCount: parseInt(videoStats.likeCount || 0),
-                    // (참고) 구독자 수는 채널에서 비공개할 수 있음
-                    subscriberCount: channelStats.hiddenSubscriberCount ? 0 : parseInt(channelStats.subscriberCount || 0)
+                    // ⭐️ (수정) parseInt -> Number
+                    viewCount: Number(videoStats.viewCount || 0),
+                    // ⭐️ (수정) parseInt -> Number
+                    likeCount: Number(videoStats.likeCount || 0),
+                    // ⭐️ (수정) parseInt -> Number
+                    subscriberCount: channelStats.hiddenSubscriberCount ? 0 : Number(channelStats.subscriberCount || 0)
                 }
             };
         });
@@ -235,7 +237,7 @@ async function performSearch() {
     }
 }
 
-// (추가) API 오류 헬퍼 함수
+// (기존) API 오류 헬퍼 함수
 async function createError(response, step) {
     const errorData = await response.json();
     let message = `[${step} 오류] ${errorData.error.message}`;
@@ -254,10 +256,10 @@ function filterClientSide(items) {
     const avoidKeywords = avoidKeywordsInput.value.split(",").map(k => k.trim().toLowerCase()).filter(k => k);
     const avoidChannels = avoidChannelsInput.value.split(",").map(c => c.trim().toLowerCase()).filter(c => c);
 
-    // ⭐️ (추가) 통계 필터
-    const minViews = parseInt(minViewsInput.value) || 0;
-    const minLikes = parseInt(minLikesInput.value) || 0;
-    const minSubscribers = parseInt(minSubscribersInput.value) || 0;
+    // ⭐️ (수정) 통계 필터: parseInt -> Number
+    const minViews = Number(minViewsInput.value) || 0;
+    const minLikes = Number(minLikesInput.value) || 0;
+    const minSubscribers = Number(minSubscribersInput.value) || 0;
 
     return items.filter(item => {
         // (기존) 기피 필터링
@@ -266,7 +268,7 @@ function filterClientSide(items) {
         if (avoidKeywords.some(keyword => title.includes(keyword))) return false;
         if (avoidChannels.some(channelName => channel.includes(channelName))) return false;
         
-        // ⭐️ (추가) 통계 필터링
+        // (기존) 통계 필터링 (로직은 동일)
         const stats = item.statistics;
         if (minViews > 0 && stats.viewCount < minViews) return false;
         if (minLikes > 0 && stats.likeCount < minLikes) return false;
@@ -276,7 +278,7 @@ function filterClientSide(items) {
     });
 }
 
-// ⭐️ 검색 결과 화면에 표시 (수정) ⭐️
+// (기존) 검색 결과 화면에 표시
 function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
@@ -290,7 +292,7 @@ function displayResults(items) {
     selectAllContainer.classList.remove("hidden"); 
     selectAllCheckbox.checked = false; 
 
-    // 숫자를 1.1만, 123.4만 등으로 포맷하는 헬퍼 함수
+    // (기존) 숫자 포맷 헬퍼 함수
     const formatStat = (num) => {
         if (num < 1000) return num.toLocaleString("ko-KR");
         if (num < 10000) return (num / 1000).toFixed(1) + "천";
@@ -305,12 +307,10 @@ function displayResults(items) {
         const publishedAt = new Date(item.snippet.publishedAt).toLocaleDateString("ko-KR");
         const thumbnail = item.snippet.thumbnails.medium.url;
 
-        // ⭐️ (추가) 통계 정보
+        // (기존) 통계 정보
         const stats = item.statistics;
         const viewCount = formatStat(stats.viewCount);
-        // 좋아요가 0이거나 비활성화(통계 없음)된 경우 "---" 표시
         const likeCount = stats.likeCount > 0 ? formatStat(stats.likeCount) : "---";
-        // 구독자 비공개(0) 시 "비공개" 표시
         const subscriberCount = stats.subscriberCount > 0 ? formatStat(stats.subscriberCount) : "비공개";
 
         const videoElement = `
