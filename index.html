@@ -31,16 +31,6 @@
         
         <hr class="settings-divider">
 
-        <div class="search-box">
-            <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
-            <button id="searchButton">검색</button>
-        </div>
-        <p class="search-info">'and'는 공백, 'or'는 | (파이프) 기호로 검색하세요. (예: pine or script)</p>
-        <button id="playSelectedButton" class="hidden">
-            <span>▶️ 선택한 영상 연속 재생 (새 탭)</span>
-            <span id="videoCount"></span>
-        </button>
-
         <div class="filters">
             <div class="filter-group">
                 <label for="dateFilter">📅 날짜</label>
@@ -100,6 +90,17 @@
             <div class="spinner"></div>
             <span>검색 중... (통계 정보 포함)</span>
         </div>
+
+        <div class="search-box">
+            <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
+            <button id="searchButton">검색</button>
+        </div>
+        <p class="search-info">'and'는 공백, 'or'는 | (파이프) 기호로 검색하세요. (예: pine or script)</p>
+        <button id="playSelectedButton" class="hidden">
+            <span>▶️ 선택한 영상 연속 재생 (새 탭에서 열기)</span>
+            <span id="videoCount"></span>
+        </button>
+
 
         <div id="selectAllContainer" class="hidden">
             <input type="checkbox" id="selectAllCheckbox">
