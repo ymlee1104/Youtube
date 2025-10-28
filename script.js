@@ -1,5 +1,5 @@
-// --- 1. 설정: 여기에 API 키를 입력하세요 ---
-const API_KEY = "AIzaSyDIqTnuRmi-96LE4efvz5F0rtOLBzGY5Vc";
+// --- 1. 설정: API 키는 설정 패널을 통해 localStorage에서 불러옵니다. ---
+// const API_KEY = "..."; // ⭐️ (제거)
 // ------------------------------------
 
 // DOM 요소 가져오기
@@ -7,12 +7,9 @@ const searchButton = document.getElementById("searchButton");
 const searchTerm = document.getElementById("searchTerm");
 const resultsDiv = document.getElementById("results");
 const loadingDiv = document.getElementById("loading");
-
 const playSelectedButton = document.getElementById("playSelectedButton");
-
 const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
-
 const videoCountSpan = document.getElementById("videoCount");
 
 // 필터 요소
@@ -21,8 +18,57 @@ const customDateInputs = document.getElementById("customDateInputs");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 const durationFilter = document.getElementById("durationFilter");
-const avoidKeywordsInput = document.getElementById("avoidKeywords");
-const avoidChannelsInput = document.getElementById("avoidChannels");
+
+// ⭐️ (추가) 설정 패널 요소
+const toggleSettingsButton = document.getElementById("toggleSettingsButton");
+const settingsPanel = document.getElementById("settingsPanel");
+const saveSettingsButton = document.getElementById("saveSettingsButton");
+const apiKeyInput = document.getElementById("apiKey");
+const avoidKeywordsInput = document.getElementById("avoidKeywords"); // (ID는 기존과 동일)
+const avoidChannelsInput = document.getElementById("avoidChannels"); // (ID는 기존과 동일)
+
+
+// ⭐️ (추가) 페이지 로드 시 설정 불러오기
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        const savedKey = localStorage.getItem("youtubeApiKey");
+        const savedKeywords = localStorage.getItem("youtubeAvoidKeywords");
+        const savedChannels = localStorage.getItem("youtubeAvoidChannels");
+
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+        }
+        if (savedKeywords) {
+            avoidKeywordsInput.value = savedKeywords;
+        }
+        if (savedChannels) {
+            avoidChannelsInput.value = savedChannels;
+        }
+    } catch (e) {
+        console.error("localStorage 읽기 실패:", e);
+        alert("설정(API 키 등)을 불러오는데 실패했습니다.");
+    }
+});
+
+// ⭐️ (추가) 설정 패널 토글
+toggleSettingsButton.addEventListener("click", () => {
+    settingsPanel.classList.toggle("hidden");
+});
+
+// ⭐️ (추가) 설정 저장
+saveSettingsButton.addEventListener("click", () => {
+    try {
+        localStorage.setItem("youtubeApiKey", apiKeyInput.value);
+        localStorage.setItem("youtubeAvoidKeywords", avoidKeywordsInput.value);
+        localStorage.setItem("youtubeAvoidChannels", avoidChannelsInput.value);
+        alert("설정이 브라우저에 저장되었습니다.");
+        settingsPanel.classList.add("hidden"); // 저장 후 숨기기
+    } catch (e) {
+        console.error("localStorage 저장 실패:", e);
+        alert("설정을 저장하지 못했습니다. (브라우저가 localStorage를 지원하지 않거나 용량이 꽉 찼을 수 있습니다.)");
+    }
+});
+
 
 // 날짜 필터 '사용자 지정' 선택 시 입력창 표시
 dateFilter.addEventListener("change", () => {
@@ -88,34 +134,37 @@ resultsDiv.addEventListener("change", (event) => {
 
 // YouTube API 검색 실행 (수정)
 async function performSearch() {
-    let query = searchTerm.value; // ⭐️ 'const' -> 'let'으로 변경
+    const API_KEY = apiKeyInput.value; // ⭐️ (수정) 설정 패널의 입력값에서 API 키 가져오기
+    let query = searchTerm.value;
+    
     if (!query) {
         alert("검색어를 입력하세요.");
         return;
     }
     
-    if (API_KEY === "[ 여기에_내_API_키를_입력하세요 ]" || API_KEY === "") {
-        alert("script.js 파일에 YouTube API 키를 입력해야 합니다.");
+    // ⭐️ (수정) API 키 확인 로직 변경
+    if (!API_KEY || API_KEY === "" || API_KEY.startsWith("AIzaSy...")) {
+        alert("⚙️ 설정 패널에서 유효한 YouTube API 키를 입력하고 '설정 저장'을 눌러주세요.");
+        settingsPanel.classList.remove("hidden"); // 설정 패널 열기
+        apiKeyInput.focus();
         return;
     }
 
-    // ⭐️ (추가) AND/OR 연산자 처리
-    // 1. " or " (양쪽에 공백, 대소문자 무관) -> " | " (YouTube API OR 연산자)
+    // (기존) AND/OR 연산자 처리
     query = query.replace(/\s+or\s+/gi, " | ");
-    // 2. " and " (양쪽에 공백, 대소문자 무관) -> " " (YouTube API 기본 AND 연산자)
     query = query.replace(/\s+and\s+/gi, " ");
 
     resultsDiv.innerHTML = "";
-    videoCountSpan.textContent = ""; // 검색 시작 시 카운터 초기화
+    videoCountSpan.textContent = ""; 
     loadingDiv.classList.remove("hidden");
     playSelectedButton.classList.add("hidden"); 
     selectAllContainer.classList.add("hidden"); 
 
     const params = new URLSearchParams({
         part: "snippet",
-        q: query, // ⭐️ 수정된 검색어 사용
+        q: query, 
         type: "video",
-        maxResults: 50, 
+        maxResults: 50, // ⭐️ (요청 4) 최대값 50 확인
         key: API_KEY
     });
 
@@ -149,13 +198,17 @@ async function performSearch() {
         if (!response.ok) {
             const errorData = await response.json();
             if (response.status === 403) {
-                 throw new Error(`API 오류(403): API 키 할당량이 초과되었거나 권한이 없습니다.`);
+                 throw new Error(`API 오류(403): API 키가 잘못되었거나 할당량이 초과되었습니다. '설정'을 확인하세요.`);
+            }
+             if (response.status === 400 && errorData.error.errors[0].reason === "keyInvalid") {
+                 throw new Error(`API 오류(400): API 키가 유효하지 않습니다. '설정'에서 키를 다시 입력하세요.`);
             }
             throw new Error(`API 오류: ${errorData.error.message}`);
         }
         const data = await response.json();
 
         // 3. 클라이언트 측 필터링
+        // (참고) filterClientSide 함수는 이미 avoidKeywordsInput/avoidChannelsInput의 value를 읽으므로 수정 필요 없음
         const filteredResults = filterClientSide(data.items);
 
         displayResults(filteredResults);
@@ -168,7 +221,9 @@ async function performSearch() {
     }
 }
 
-// 기피 키워드/채널 필터링 함수
+// 기피 키워드/채널 필터링 함수 (수정 없음)
+// 이 함수는 이미 ID를 기반으로 입력 필드의 값을 읽어오므로
+// HTML의 ID만 동일하면(avoidKeywordsInput, avoidChannelsInput) 수정할 필요가 없습니다.
 function filterClientSide(items) {
     const avoidKeywords = avoidKeywordsInput.value.split(",")
         .map(k => k.trim().toLowerCase()).filter(k => k);
@@ -190,13 +245,13 @@ function filterClientSide(items) {
     });
 }
 
-// 검색 결과 화면에 표시
+// 검색 결과 화면에 표시 (수정 없음)
 function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
         playSelectedButton.classList.add("hidden");
         selectAllContainer.classList.add("hidden"); 
-        updateVideoCount(); // 카운터 0/0 -> ""으로 비우기
+        updateVideoCount(); 
         return;
     }
 
@@ -229,7 +284,5 @@ function displayResults(items) {
         resultsDiv.innerHTML += videoElement;
     });
 
-    // 모든 결과가 표시된 후, 카운터 초기화 (예: "0 / 30")
     updateVideoCount();
-
 }

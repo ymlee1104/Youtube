@@ -4,12 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>클린 유튜브 검색기</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='30,20 80,50 30,80' fill='%23FF0000'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
         <h1>🔍 클린 유튜브 검색기</h1>
+
+        <button id="toggleSettingsButton" class="settings-toggle">⚙️ 설정 (API 키, 기피 목록)</button>
+        <div id="settingsPanel" class="settings-panel hidden">
+            <div class="filter-group">
+                <label for="apiKey">🔑 YouTube API 키</label>
+                <input type="password" id="apiKey" placeholder="AIzaSy... (로컬 저장소에 저장됩니다)">
+            </div>
+            <div class="filter-group avoid-group">
+                <label for="avoidKeywords">🚫 기피 키워드 (쉼표로 구분)</label>
+                <input type="text" id="avoidKeywords" placeholder="예: 정치, ASMR, 뉴스">
+            </div>
+            <div class="filter-group avoid-group">
+                <label for="avoidChannels">🔇 기피 채널 (쉼표로 구분)</label>
+                <input type="text" id="avoidChannels" placeholder="예: OOO뉴스, XXX리뷰">
+            </div>
+            <button id="saveSettingsButton">설정 저장</button>
+        </div>
+        
+        <hr class="settings-divider">
 
         <div class="search-box">
             <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
@@ -43,25 +63,13 @@
                     <option value="short">Short (4분 미만)</option>
                     <option value="medium">Medium (4~20분)</option>
                     <option value="long">Long (20분 초과)</option>
-                </select>
+                    </select>
             </div>
             
             <div id="customDateInputs" class="custom-date hidden">
                 <input type="date" id="startDate" title="시작 날짜">
                 <span>~</span>
                 <input type="date" id="endDate" title="종료 날짜">
-            </div>
-        </div>
-
-        <div class="avoid-filters">
-            <div class="filter-group avoid-group">
-                <label for="avoidKeywords">🚫 기피 키워드 (쉼표로 구분)</label>
-                <input type="text" id="avoidKeywords" placeholder="예: 정치, ASMR, 뉴스">
-            </div>
-
-            <div class="filter-group avoid-group">
-                <label for="avoidChannels">🔇 기피 채널 (쉼표로 구분)</label>
-                <input type="text" id="avoidChannels" placeholder="예: OOO뉴스, XXX리뷰">
             </div>
         </div>
 

@@ -22,6 +22,70 @@ h1 {
     margin-bottom: 25px;
 }
 
+/* ⭐️ (추가) 설정 패널 스타일 */
+.settings-toggle {
+    background-color: #333;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 0; /* 구분선과 붙임 */
+}
+.settings-toggle:hover {
+    background-color: #444;
+}
+.settings-panel {
+    padding: 20px;
+    background-color: #262626; /* 기본 패널보다 살짝 밝게 */
+    border-radius: 0 0 8px 8px; /* 버튼 아래에 붙도록 */
+    margin-bottom: 20px;
+    display: grid;
+    gap: 15px;
+    border: 1px solid #444;
+    border-top: none; /* 버튼과 경계선 없앰 */
+}
+.settings-panel .filter-group {
+    margin-bottom: 0; /* grid gap이 간격 조절 */
+}
+.settings-panel .filter-group input {
+     /* 100% 너비 */
+}
+
+#saveSettingsButton {
+    padding: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    grid-column: 1 / -1; /* 버튼은 한 줄 전체 차지 */
+}
+#saveSettingsButton:hover {
+    background-color: #0056b3;
+}
+.settings-divider {
+    border: 0;
+    border-top: 1px solid #3a3a3a;
+    margin: 20px 0;
+}
+/* ⭐️ (수정) 설정 패널이 hidden일 때 margin-bottom 적용 (버튼만 보일 때) */
+.settings-toggle + .settings-panel.hidden {
+    margin-bottom: 0;
+}
+/* ⭐️ (수정) 설정 버튼이 보일 때 구분선은 안 보이게 (패널 열렸을 때만 보이게) */
+.settings-toggle + .settings-panel.hidden + .settings-divider {
+    display: none;
+}
+
+
 /* 검색창 */
 .search-box {
     display: flex;
@@ -53,16 +117,14 @@ h1 {
     background-color: #0056b3;
 }
 
-/* ⭐️ (추가) 검색 연산자 안내 */
 .search-info {
     font-size: 13px;
-    color: #999; /* 눈에 띄지 않는 회색 */
+    color: #999; 
     text-align: center;
-    margin-top: -10px; /* 검색창과의 간격 */
+    margin-top: -10px; 
     margin-bottom: 15px;
 }
 
-/* (수정) 연속 재생 버튼 - Flexbox 적용 */
 #playSelectedButton {
     width: 100%;
     padding: 12px;
@@ -75,8 +137,6 @@ h1 {
     cursor: pointer;
     margin-bottom: 20px;
     transition: background-color 0.3s ease;
-
-    /* Flexbox로 텍스트와 카운터 정렬 */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -85,14 +145,13 @@ h1 {
     background-color: #218838;
 }
 
-/* (추가) 카운터 스타일 */
 #videoCount {
     font-size: 0.9em;
     font-weight: normal;
-    background-color: rgba(0, 0, 0, 0.2); /* 살짝 어두운 배경 */
+    background-color: rgba(0, 0, 0, 0.2); 
     padding: 2px 8px;
     border-radius: 4px;
-    margin-left: 10px; /* 텍스트와의 간격 */
+    margin-left: 10px; 
 }
 
 
@@ -104,12 +163,17 @@ h1 {
     margin-bottom: 15px;
 }
 
+/* ⭐️ (제거) 기존 기피 필터 스타일
 .avoid-filters {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-bottom: 15px;
 }
+.avoid-group {
+    grid-column: 1 / -1; 
+}
+*/
 
 .filter-group {
     display: flex;
@@ -123,7 +187,8 @@ h1 {
 }
 
 .filter-group select,
-.filter-group input[type="text"] {
+.filter-group input[type="text"],
+.filter-group input[type="password"] { /* ⭐️ (추가) password 타입 */
     padding: 10px;
     border: 1px solid #444;
     border-radius: 5px;
@@ -132,16 +197,12 @@ h1 {
     font-size: 14px;
 }
 
-.avoid-group {
-    grid-column: 1 / -1; 
-}
-
 /* 사용자 지정 날짜 (2열 전체 차지) */
 .custom-date {
     display: flex;
     gap: 10px;
     align-items: center;
-    grid-column: 1 / -1; /* 2열 전체 차지 */
+    grid-column: 1 / -1; 
     margin-top: -5px;
     margin-bottom: 15px;
 }
@@ -257,9 +318,12 @@ h1 {
     .filters {
         grid-template-columns: 1fr; /* 2열 -> 1열 */
     }
-    .avoid-filters {
-        grid-template-columns: 1fr; /* 2열 -> 1열 */
+
+    /* ⭐️ (추가) 설정 패널도 1열로 */
+    .settings-panel {
+        grid-template-columns: 1fr;
     }
+
     .video-item {
         flex-direction: row; 
     }
@@ -272,14 +336,13 @@ h1 {
         font-size: 1em;
     }
 
-    /* (추가) 모바일에서 카운터 공간 확보 */
     #playSelectedButton {
-        flex-direction: column; /* 버튼 텍스트와 카운터를 세로로 */
+        flex-direction: column; 
         align-items: flex-start;
         gap: 5px;
     }
     #videoCount {
         font-size: 1em;
-        align-self: flex-end; /* 카운터는 오른쪽 정렬 */
+        align-self: flex-end; 
     }
 }
