@@ -8,7 +8,7 @@ const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
 const videoCountSpan = document.getElementById("videoCount");
 
-// (기존) 필터 요소
+// (기 기존) 필터 요소
 const dateFilter = document.getElementById("dateFilter");
 const customDateInputs = document.getElementById("customDateInputs");
 const startDate = document.getElementById("startDate");
@@ -27,8 +27,8 @@ const toggleSettingsButton = document.getElementById("toggleSettingsButton");
 const settingsPanel = document.getElementById("settingsPanel");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const apiKeyInput = document.getElementById("apiKey");
-const avoidKeywordsInput = document.getElementById("avoidKeywords"); 
-const avoidChannelsInput = document.getElementById("avoidChannels"); 
+const avoidKeywordsInput = document.getElementById("avoidKeywords");
+const avoidChannelsInput = document.getElementById("avoidChannels");
 
 
 // (기존) 페이지 로드 시 설정 불러오기
@@ -59,7 +59,7 @@ saveSettingsButton.addEventListener("click", () => {
         localStorage.setItem("youtubeAvoidKeywords", avoidKeywordsInput.value);
         localStorage.setItem("youtubeAvoidChannels", avoidChannelsInput.value);
         alert("설정이 브라우저에 저장되었습니다.");
-        settingsPanel.classList.add("hidden"); 
+        settingsPanel.classList.add("hidden");
     } catch (e) {
         console.error("localStorage 저장 실패:", e);
         alert("설정을 저장하지 못했습니다.");
@@ -90,7 +90,7 @@ playSelectedButton.addEventListener("click", () => {
         return;
     }
     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
-    
+
     // ⭐️ (수정) URL 형식을 '현재 재생목록(Queue)'으로 변경
     const firstVideoId = videoIds[0];
     const videoIdString = videoIds.join(',');
@@ -98,23 +98,9 @@ playSelectedButton.addEventListener("click", () => {
     // ⭐️ 'v'에는 첫 번째 영상을, 'list'에는 전체 영상 ID 목록을 전달합니다.
     // 이렇게 하면 'Untitled List'가 아닌 편집 가능한 '현재 재생목록'으로 열립니다.
     const playlistUrl = `https://www.youtube.com/watch?v=${firstVideoId}&list=${videoIdString}`;
-    
+
     window.open(playlistUrl, '_blank');
 });
-
-
-// (기존) 연속 재생 버튼
-// playSelectedButton.addEventListener("click", () => {
-//     const checkedBoxes = document.querySelectorAll(".queue-checkbox:checked");
-//     if (checkedBoxes.length === 0) {
-//         alert("연속 재생할 영상을 1개 이상 선택하세요.");
-//         return;
-//     }
-//     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
-//     const videoIdString = videoIds.join(',');
-//     const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
-//     window.open(playlistUrl, '_blank');
-// });
 
 
 // (기존) 선택 카운터 업데이트
@@ -129,7 +115,7 @@ selectAllCheckbox.addEventListener("change", () => {
     document.querySelectorAll(".queue-checkbox").forEach(box => {
         box.checked = selectAllCheckbox.checked;
     });
-    updateVideoCount(); 
+    updateVideoCount();
 });
 
 // (기존) 개별 체크박스
@@ -145,28 +131,28 @@ function parseISO8601Duration(durationString) {
     const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
     const matches = durationString.match(regex);
     if (!matches) return 0;
-    
+
     // (matches[1] || 0) -> 시간(H)
     // (matches[2] || 0) -> 분(M)
     // (matches[3] || 0) -> 초(S)
     const hours = Number(matches[1] || 0);
     const minutes = Number(matches[2] || 0);
     const seconds = Number(matches[3] || 0);
-    
+
     return (hours * 3600) + (minutes * 60) + seconds;
 }
 
 
 // ⭐️ YouTube API 검색 실행 (수정) ⭐️
 async function performSearch() {
-    const API_KEY = apiKeyInput.value; 
+    const API_KEY = apiKeyInput.value;
     let query = searchTerm.value;
-    
+
     // (기존) 입력값 검증
     if (!query) { alert("검색어를 입력하세요."); return; }
     if (!API_KEY || API_KEY === "" || API_KEY.startsWith("AIzaSy...")) {
         alert("⚙️ 설정 패널에서 유효한 YouTube API 키를 입력하고 '설정 저장'을 눌러주세요.");
-        settingsPanel.classList.remove("hidden"); 
+        settingsPanel.classList.remove("hidden");
         apiKeyInput.focus();
         return;
     }
@@ -175,10 +161,10 @@ async function performSearch() {
 
     // (기존) 로딩 UI
     resultsDiv.innerHTML = "";
-    videoCountSpan.textContent = ""; 
+    videoCountSpan.textContent = "";
     loadingDiv.classList.remove("hidden");
-    playSelectedButton.classList.add("hidden"); 
-    selectAllContainer.classList.add("hidden"); 
+    playSelectedButton.classList.add("hidden");
+    selectAllContainer.classList.add("hidden");
 
     const baseApiUrl = "https://www.googleapis.com/youtube/v3";
 
@@ -186,12 +172,12 @@ async function performSearch() {
         // --- 1단계: 영상 검색 (Search: list) ---
         const searchParams = new URLSearchParams({
             part: "snippet",
-            q: query, 
+            q: query,
             type: "video",
-            maxResults: 50, 
+            maxResults: 50,
             key: API_KEY
         });
-        
+
         // (기존) 날짜/길이 필터 적용
         const dateValue = dateFilter.value;
         if (dateValue === "custom") {
@@ -200,7 +186,7 @@ async function performSearch() {
         } else if (dateValue !== "all") {
             const afterDate = new Date();
             // 🔽 (수정) getDate()로 수정
-            if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1); 
+            if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1);
             if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
             if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
             if (dateValue === "year") afterDate.setFullYear(afterDate.getFullYear() - 1);
@@ -212,7 +198,7 @@ async function performSearch() {
 
         const searchResponse = await fetch(`${baseApiUrl}/search?${searchParams.toString()}`);
         if (!searchResponse.ok) throw await createError(searchResponse, "1. 영상 검색");
-        
+
         const searchData = await searchResponse.json();
         if (searchData.items.length === 0) {
             resultsDiv.innerHTML = "<p>검색 결과가 없습니다.</p>";
@@ -223,7 +209,7 @@ async function performSearch() {
         const videoIds = searchData.items.map(item => item.id.videoId).join(',');
         const videoParams = new URLSearchParams({
             // ⭐️ (수정) statistics, contentDetails (재생 시간 포함)
-            part: "statistics,contentDetails", 
+            part: "statistics,contentDetails",
             id: videoIds,
             key: API_KEY
         });
@@ -254,7 +240,7 @@ async function performSearch() {
             const videoStats = videoData.statistics || {};
             const videoContent = videoData.contentDetails || {}; // ⭐️ 재생 시간 정보
             const channelStats = channelStatsMap.get(item.snippet.channelId) || {};
-            
+
             return {
                 ...item,
                 statistics: { // (기존) 통계
@@ -263,11 +249,11 @@ async function performSearch() {
                     subscriberCount: channelStats.hiddenSubscriberCount ? 0 : Number(channelStats.subscriberCount || 0)
                 },
                 contentDetails: { // ⭐️ (추가) 재생 시간
-                    duration: videoContent.duration || "PT0S" 
+                    duration: videoContent.duration || "PT0S"
                 }
             };
         });
-        
+
         // --- 5단계: 클라이언트 측 필터링 (기피 + 통계 + ⭐️비율) ---
         const filteredResults = filterClientSide(mergedItems);
 
@@ -315,7 +301,7 @@ function filterClientSide(items) {
         const channel = item.snippet.channelTitle.toLowerCase();
         if (avoidKeywords.some(keyword => title.includes(keyword))) return false;
         if (avoidChannels.some(channelName => channel.includes(channelName))) return false;
-        
+
         // (기존) 통계 필터링
         const stats = item.statistics;
         if (minViews > 0 && stats.viewCount < minViews) return false;
@@ -325,10 +311,10 @@ function filterClientSide(items) {
         // ⭐️ (추가) 비율(시간) 필터링
         if (aspectRatio !== 'any') {
             const durationInSeconds = parseISO8601Duration(item.contentDetails.duration);
-            
+
             // "좁은 영상"(Shorts)을 선택했는데 61초를 초과하면 탈락
             if (aspectRatio === 'short' && durationInSeconds > 61) return false;
-            
+
             // "넓은 영상"(일반)을 선택했는데 61초 이하면 탈락
             if (aspectRatio === 'wide' && durationInSeconds <= 61) return false;
         }
@@ -342,14 +328,14 @@ function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
         playSelectedButton.classList.add("hidden");
-        selectAllContainer.classList.add("hidden"); 
-        updateVideoCount(); 
+        selectAllContainer.classList.add("hidden");
+        updateVideoCount();
         return;
     }
 
     playSelectedButton.classList.remove("hidden");
-    selectAllContainer.classList.remove("hidden"); 
-    selectAllCheckbox.checked = false; 
+    selectAllContainer.classList.remove("hidden");
+    selectAllCheckbox.checked = false;
 
     // (기존) 숫자 포맷 헬퍼 함수
     const formatStat = (num) => {
@@ -395,4 +381,3 @@ function displayResults(items) {
 
     updateVideoCount();
 }
-
