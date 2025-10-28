@@ -35,9 +35,7 @@
             <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
             <button id="searchButton">검색</button>
         </div>
-        
         <p class="search-info">'and'는 공백, 'or'는 | (파이프) 기호로 검색하세요. (예: pine or script)</p>
-
         <button id="playSelectedButton" class="hidden">
             <span>▶️ 선택한 영상 연속 재생 (새 탭)</span>
             <span id="videoCount"></span>
@@ -63,7 +61,7 @@
                     <option value="short">Short (4분 미만)</option>
                     <option value="medium">Medium (4~20분)</option>
                     <option value="long">Long (20분 초과)</option>
-                    </select>
+                </select>
             </div>
             
             <div id="customDateInputs" class="custom-date hidden">
@@ -73,9 +71,25 @@
             </div>
         </div>
 
+        <div class="filters-numeric">
+            <div class="filter-group">
+                <label for="minViews">📊 최소 조회 수</label>
+                <input type="number" id="minViews" placeholder="예: 10000" min="0">
+            </div>
+            <div class="filter-group">
+                <label for="minLikes">👍 최소 좋아요 수</label>
+                <input type="number" id="minLikes" placeholder="예: 500" min="0">
+            </div>
+            <div class="filter-group">
+                <label for="minSubscribers">👥 최소 구독자 수</label>
+                <input type="number" id="minSubscribers" placeholder="예: 100000" min="0">
+            </div>
+        </div>
+
+
         <div id="loading" class="hidden">
             <div class="spinner"></div>
-            <span>검색 중...</span>
+            <span>검색 중... (통계 정보 포함)</span>
         </div>
 
         <div id="selectAllContainer" class="hidden">

@@ -1,8 +1,4 @@
-// --- 1. 설정: API 키는 설정 패널을 통해 localStorage에서 불러옵니다. ---
-// const API_KEY = "..."; // ⭐️ (제거)
-// ------------------------------------
-
-// DOM 요소 가져오기
+// DOM 요소 가져오기 (기존)
 const searchButton = document.getElementById("searchButton");
 const searchTerm = document.getElementById("searchTerm");
 const resultsDiv = document.getElementById("results");
@@ -12,65 +8,64 @@ const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
 const videoCountSpan = document.getElementById("videoCount");
 
-// 필터 요소
+// 필터 요소 (기존)
 const dateFilter = document.getElementById("dateFilter");
 const customDateInputs = document.getElementById("customDateInputs");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 const durationFilter = document.getElementById("durationFilter");
 
-// ⭐️ (추가) 설정 패널 요소
+// ⭐️ (추가) 통계 필터 요소
+const minViewsInput = document.getElementById("minViews");
+const minLikesInput = document.getElementById("minLikes");
+const minSubscribersInput = document.getElementById("minSubscribers");
+
+// 설정 패널 요소 (기존)
 const toggleSettingsButton = document.getElementById("toggleSettingsButton");
 const settingsPanel = document.getElementById("settingsPanel");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const apiKeyInput = document.getElementById("apiKey");
-const avoidKeywordsInput = document.getElementById("avoidKeywords"); // (ID는 기존과 동일)
-const avoidChannelsInput = document.getElementById("avoidChannels"); // (ID는 기존과 동일)
+const avoidKeywordsInput = document.getElementById("avoidKeywords"); 
+const avoidChannelsInput = document.getElementById("avoidChannels"); 
 
 
-// ⭐️ (추가) 페이지 로드 시 설정 불러오기
+// (기존) 페이지 로드 시 설정 불러오기
 document.addEventListener("DOMContentLoaded", () => {
     try {
         const savedKey = localStorage.getItem("youtubeApiKey");
         const savedKeywords = localStorage.getItem("youtubeAvoidKeywords");
         const savedChannels = localStorage.getItem("youtubeAvoidChannels");
 
-        if (savedKey) {
-            apiKeyInput.value = savedKey;
-        }
-        if (savedKeywords) {
-            avoidKeywordsInput.value = savedKeywords;
-        }
-        if (savedChannels) {
-            avoidChannelsInput.value = savedChannels;
-        }
+        if (savedKey) apiKeyInput.value = savedKey;
+        if (savedKeywords) avoidKeywordsInput.value = savedKeywords;
+        if (savedChannels) avoidChannelsInput.value = savedChannels;
     } catch (e) {
         console.error("localStorage 읽기 실패:", e);
         alert("설정(API 키 등)을 불러오는데 실패했습니다.");
     }
 });
 
-// ⭐️ (추가) 설정 패널 토글
+// (기존) 설정 패널 토글
 toggleSettingsButton.addEventListener("click", () => {
     settingsPanel.classList.toggle("hidden");
 });
 
-// ⭐️ (추가) 설정 저장
+// (기존) 설정 저장
 saveSettingsButton.addEventListener("click", () => {
     try {
         localStorage.setItem("youtubeApiKey", apiKeyInput.value);
         localStorage.setItem("youtubeAvoidKeywords", avoidKeywordsInput.value);
         localStorage.setItem("youtubeAvoidChannels", avoidChannelsInput.value);
         alert("설정이 브라우저에 저장되었습니다.");
-        settingsPanel.classList.add("hidden"); // 저장 후 숨기기
+        settingsPanel.classList.add("hidden"); 
     } catch (e) {
         console.error("localStorage 저장 실패:", e);
-        alert("설정을 저장하지 못했습니다. (브라우저가 localStorage를 지원하지 않거나 용량이 꽉 찼을 수 있습니다.)");
+        alert("설정을 저장하지 못했습니다.");
     }
 });
 
 
-// 날짜 필터 '사용자 지정' 선택 시 입력창 표시
+// (기존) 날짜 필터
 dateFilter.addEventListener("change", () => {
     if (dateFilter.value === "custom") {
         customDateInputs.classList.remove("hidden");
@@ -79,17 +74,13 @@ dateFilter.addEventListener("change", () => {
     }
 });
 
-// 검색 버튼 클릭 이벤트
-searchButton.addEventListener("click", () => {
-    performSearch();
-});
+// (기존) 검색 버튼 이벤트
+searchButton.addEventListener("click", () => performSearch());
 searchTerm.addEventListener("keyup", (event) => {
-    if (event.key === "Enter") {
-        performSearch();
-    }
+    if (event.key === "Enter") performSearch();
 });
 
-// 연속 재생 버튼 클릭 이벤트
+// (기존) 연속 재생 버튼
 playSelectedButton.addEventListener("click", () => {
     const checkedBoxes = document.querySelectorAll(".queue-checkbox:checked");
     if (checkedBoxes.length === 0) {
@@ -103,28 +94,22 @@ playSelectedButton.addEventListener("click", () => {
 });
 
 
-// 선택된/전체 영상 갯수 업데이트 함수
+// (기존) 선택 카운터 업데이트
 function updateVideoCount() {
     const selectedCount = document.querySelectorAll(".queue-checkbox:checked").length;
     const totalCount = document.querySelectorAll(".queue-checkbox").length;
-
-    if (totalCount > 0) {
-        videoCountSpan.textContent = `${selectedCount} / ${totalCount}`;
-    } else {
-        videoCountSpan.textContent = ""; // 결과 없으면 비움
-    }
+    videoCountSpan.textContent = (totalCount > 0) ? `${selectedCount} / ${totalCount}` : "";
 }
 
-// '전체 선택' 체크박스 이벤트
+// (기존) 전체 선택
 selectAllCheckbox.addEventListener("change", () => {
-    const allCheckboxes = document.querySelectorAll(".queue-checkbox");
-    allCheckboxes.forEach(box => {
+    document.querySelectorAll(".queue-checkbox").forEach(box => {
         box.checked = selectAllCheckbox.checked;
     });
-    updateVideoCount(); // 카운터 업데이트
+    updateVideoCount(); 
 });
 
-// 개별 체크박스 클릭 시 카운터 업데이트 (이벤트 위임)
+// (기존) 개별 체크박스
 resultsDiv.addEventListener("change", (event) => {
     if (event.target.classList.contains("queue-checkbox")) {
         updateVideoCount();
@@ -132,9 +117,9 @@ resultsDiv.addEventListener("change", (event) => {
 });
 
 
-// YouTube API 검색 실행 (수정)
+// ⭐️ YouTube API 검색 실행 (대폭 수정) ⭐️
 async function performSearch() {
-    const API_KEY = apiKeyInput.value; // ⭐️ (수정) 설정 패널의 입력값에서 API 키 가져오기
+    const API_KEY = apiKeyInput.value; 
     let query = searchTerm.value;
     
     if (!query) {
@@ -142,17 +127,14 @@ async function performSearch() {
         return;
     }
     
-    // ⭐️ (수정) API 키 확인 로직 변경
     if (!API_KEY || API_KEY === "" || API_KEY.startsWith("AIzaSy...")) {
         alert("⚙️ 설정 패널에서 유효한 YouTube API 키를 입력하고 '설정 저장'을 눌러주세요.");
-        settingsPanel.classList.remove("hidden"); // 설정 패널 열기
+        settingsPanel.classList.remove("hidden"); 
         apiKeyInput.focus();
         return;
     }
 
-    // (기존) AND/OR 연산자 처리
-    query = query.replace(/\s+or\s+/gi, " | ");
-    query = query.replace(/\s+and\s+/gi, " ");
+    query = query.replace(/\s+or\s+/gi, " | ").replace(/\s+and\s+/gi, " ");
 
     resultsDiv.innerHTML = "";
     videoCountSpan.textContent = ""; 
@@ -160,57 +142,89 @@ async function performSearch() {
     playSelectedButton.classList.add("hidden"); 
     selectAllContainer.classList.add("hidden"); 
 
-    const params = new URLSearchParams({
-        part: "snippet",
-        q: query, 
-        type: "video",
-        maxResults: 50, // ⭐️ (요청 4) 최대값 50 확인
-        key: API_KEY
-    });
+    const baseApiUrl = "https://www.googleapis.com/youtube/v3";
 
-    // 날짜 필터 적용
-    const dateValue = dateFilter.value;
-    if (dateValue === "custom") {
-        if (startDate.value) {
-            params.set("publishedAfter", new Date(startDate.value).toISOString());
-        }
-        if (endDate.value) {
-            params.set("publishedBefore", new Date(endDate.value).toISOString());
-        }
-    } else if (dateValue !== "all") {
-        const afterDate = new Date();
-        if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1);
-        if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
-        if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
-        if (dateValue === "year") afterDate.setFullYear(afterDate.getFullYear() - 1);
-        params.set("publishedAfter", afterDate.toISOString());
-    }
-
-    // 영상 길이 필터 적용
-    const durationValue = durationFilter.value;
-    if (durationValue !== "any") {
-        params.set("videoDuration", durationValue);
-    }
-
-    // 2. API 호출
     try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            if (response.status === 403) {
-                 throw new Error(`API 오류(403): API 키가 잘못되었거나 할당량이 초과되었습니다. '설정'을 확인하세요.`);
-            }
-             if (response.status === 400 && errorData.error.errors[0].reason === "keyInvalid") {
-                 throw new Error(`API 오류(400): API 키가 유효하지 않습니다. '설정'에서 키를 다시 입력하세요.`);
-            }
-            throw new Error(`API 오류: ${errorData.error.message}`);
+        // --- 1단계: 영상 검색 (Search: list) ---
+        const searchParams = new URLSearchParams({
+            part: "snippet",
+            q: query, 
+            type: "video",
+            maxResults: 50, 
+            key: API_KEY
+        });
+
+        // (기존) 날짜/길이 필터 적용
+        const dateValue = dateFilter.value;
+        if (dateValue === "custom") {
+            if (startDate.value) searchParams.set("publishedAfter", new Date(startDate.value).toISOString());
+            if (endDate.value) searchParams.set("publishedBefore", new Date(endDate.value).toISOString());
+        } else if (dateValue !== "all") {
+            const afterDate = new Date();
+            if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1);
+            if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
+            if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
+            if (dateValue === "year") afterDate.setFullYear(afterDate.getFullYear() - 1);
+            searchParams.set("publishedAfter", afterDate.toISOString());
         }
-        const data = await response.json();
+        if (durationFilter.value !== "any") {
+            searchParams.set("videoDuration", durationFilter.value);
+        }
 
-        // 3. 클라이언트 측 필터링
-        // (참고) filterClientSide 함수는 이미 avoidKeywordsInput/avoidChannelsInput의 value를 읽으므로 수정 필요 없음
-        const filteredResults = filterClientSide(data.items);
+        const searchResponse = await fetch(`${baseApiUrl}/search?${searchParams.toString()}`);
+        if (!searchResponse.ok) throw await createError(searchResponse, "1. 영상 검색");
+        
+        const searchData = await searchResponse.json();
+        if (searchData.items.length === 0) {
+            resultsDiv.innerHTML = "<p>검색 결과가 없습니다.</p>";
+            return;
+        }
 
+        // --- 2단계: 영상 통계 (Videos: list - 조회수, 좋아요) ---
+        const videoIds = searchData.items.map(item => item.id.videoId).join(',');
+        const videoParams = new URLSearchParams({
+            part: "statistics",
+            id: videoIds,
+            key: API_KEY
+        });
+        const videoStatsResponse = await fetch(`${baseApiUrl}/videos?${videoParams.toString()}`);
+        if (!videoStatsResponse.ok) throw await createError(videoStatsResponse, "2. 영상 통계");
+
+        const videoStatsData = await videoStatsResponse.json();
+        const videoStatsMap = new Map(videoStatsData.items.map(item => [item.id, item.statistics]));
+
+        // --- 3단계: 채널 통계 (Channels: list - 구독자) ---
+        const channelIds = [...new Set(searchData.items.map(item => item.snippet.channelId))].join(',');
+        const channelParams = new URLSearchParams({
+            part: "statistics",
+            id: channelIds,
+            key: API_KEY
+        });
+        const channelStatsResponse = await fetch(`${baseApiUrl}/channels?${channelParams.toString()}`);
+        if (!channelStatsResponse.ok) throw await createError(channelStatsResponse, "3. 채널 통계");
+
+        const channelStatsData = await channelStatsResponse.json();
+        const channelStatsMap = new Map(channelStatsData.items.map(item => [item.id, item.statistics]));
+
+        // --- 4단계: 데이터 병합 ---
+        const mergedItems = searchData.items.map(item => {
+            const videoStats = videoStatsMap.get(item.id.videoId) || {};
+            const channelStats = channelStatsMap.get(item.snippet.channelId) || {};
+            return {
+                ...item,
+                statistics: {
+                    viewCount: parseInt(videoStats.viewCount || 0),
+                    likeCount: parseInt(videoStats.likeCount || 0),
+                    // (참고) 구독자 수는 채널에서 비공개할 수 있음
+                    subscriberCount: channelStats.hiddenSubscriberCount ? 0 : parseInt(channelStats.subscriberCount || 0)
+                }
+            };
+        });
+        
+        // --- 5단계: 클라이언트 측 필터링 (기피 + 통계) ---
+        const filteredResults = filterClientSide(mergedItems);
+
+        // --- 6단계: 결과 표시 ---
         displayResults(filteredResults);
 
     } catch (error) {
@@ -221,31 +235,48 @@ async function performSearch() {
     }
 }
 
-// 기피 키워드/채널 필터링 함수 (수정 없음)
-// 이 함수는 이미 ID를 기반으로 입력 필드의 값을 읽어오므로
-// HTML의 ID만 동일하면(avoidKeywordsInput, avoidChannelsInput) 수정할 필요가 없습니다.
-function filterClientSide(items) {
-    const avoidKeywords = avoidKeywordsInput.value.split(",")
-        .map(k => k.trim().toLowerCase()).filter(k => k);
-    const avoidChannels = avoidChannelsInput.value.split(",")
-        .map(c => c.trim().toLowerCase()).filter(c => c);
-
-    if (avoidKeywords.length === 0 && avoidChannels.length === 0) {
-        return items;
+// (추가) API 오류 헬퍼 함수
+async function createError(response, step) {
+    const errorData = await response.json();
+    let message = `[${step} 오류] ${errorData.error.message}`;
+    if (response.status === 403) {
+        message = `[${step} 오류(403)] API 키 할당량이 초과되었거나 권한이 없습니다. '설정'을 확인하세요.`;
+    } else if (response.status === 400 && errorData.error.errors[0].reason === "keyInvalid") {
+        message = `[${step} 오류(400)] API 키가 유효하지 않습니다. '설정'에서 키를 다시 입력하세요.`;
     }
+    return new Error(message);
+}
+
+
+// ⭐️ 기피/통계 필터링 함수 (수정) ⭐️
+function filterClientSide(items) {
+    // (기존) 기피 필터
+    const avoidKeywords = avoidKeywordsInput.value.split(",").map(k => k.trim().toLowerCase()).filter(k => k);
+    const avoidChannels = avoidChannelsInput.value.split(",").map(c => c.trim().toLowerCase()).filter(c => c);
+
+    // ⭐️ (추가) 통계 필터
+    const minViews = parseInt(minViewsInput.value) || 0;
+    const minLikes = parseInt(minLikesInput.value) || 0;
+    const minSubscribers = parseInt(minSubscribersInput.value) || 0;
 
     return items.filter(item => {
+        // (기존) 기피 필터링
         const title = item.snippet.title.toLowerCase();
         const channel = item.snippet.channelTitle.toLowerCase();
-        const hasAvoidKeyword = avoidKeywords.some(keyword => title.includes(keyword));
-        if (hasAvoidKeyword) return false;
-        const hasAvoidChannel = avoidChannels.some(channelName => channel.includes(channelName));
-        if (hasAvoidChannel) return false;
+        if (avoidKeywords.some(keyword => title.includes(keyword))) return false;
+        if (avoidChannels.some(channelName => channel.includes(channelName))) return false;
+        
+        // ⭐️ (추가) 통계 필터링
+        const stats = item.statistics;
+        if (minViews > 0 && stats.viewCount < minViews) return false;
+        if (minLikes > 0 && stats.likeCount < minLikes) return false;
+        if (minSubscribers > 0 && stats.subscriberCount < minSubscribers) return false;
+
         return true;
     });
 }
 
-// 검색 결과 화면에 표시 (수정 없음)
+// ⭐️ 검색 결과 화면에 표시 (수정) ⭐️
 function displayResults(items) {
     if (items.length === 0) {
         resultsDiv.innerHTML = "<p>검색 결과가 없습니다. (필터 조건 포함)</p>";
@@ -259,12 +290,28 @@ function displayResults(items) {
     selectAllContainer.classList.remove("hidden"); 
     selectAllCheckbox.checked = false; 
 
+    // 숫자를 1.1만, 123.4만 등으로 포맷하는 헬퍼 함수
+    const formatStat = (num) => {
+        if (num < 1000) return num.toLocaleString("ko-KR");
+        if (num < 10000) return (num / 1000).toFixed(1) + "천";
+        if (num < 100000000) return (num / 10000).toFixed(1) + "만";
+        return (num / 100000000).toFixed(1) + "억";
+    };
+
     items.forEach(item => {
         const videoId = item.id.videoId;
         const title = item.snippet.title;
         const channel = item.snippet.channelTitle;
         const publishedAt = new Date(item.snippet.publishedAt).toLocaleDateString("ko-KR");
         const thumbnail = item.snippet.thumbnails.medium.url;
+
+        // ⭐️ (추가) 통계 정보
+        const stats = item.statistics;
+        const viewCount = formatStat(stats.viewCount);
+        // 좋아요가 0이거나 비활성화(통계 없음)된 경우 "---" 표시
+        const likeCount = stats.likeCount > 0 ? formatStat(stats.likeCount) : "---";
+        // 구독자 비공개(0) 시 "비공개" 표시
+        const subscriberCount = stats.subscriberCount > 0 ? formatStat(stats.subscriberCount) : "비공개";
 
         const videoElement = `
             <div class="video-item">
@@ -278,6 +325,9 @@ function displayResults(items) {
                     </h3>
                     <p><strong>채널:</strong> ${channel}</p>
                     <p><strong>게시일:</strong> ${publishedAt}</p>
+                    <p class="video-stats">
+                        <span>📈 ${viewCount}회</span> | <span>👍 ${likeCount}</span> | <span>👥 ${subscriberCount}명</span>
+                    </p>
                 </div>
             </div>
         `;
