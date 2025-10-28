@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>클린 유튜브 검색기</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='30,20 80,50 30,80' fill='%23FF0000'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='30,20 80,50 30,80' fill='%23FF0000'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -95,7 +95,9 @@
             <input type="text" id="searchTerm" placeholder="검색어를 입력하세요...">
             <button id="searchButton">검색</button>
         </div>
-        <p class="search-info">'and'는 공백, 'or'는 | (파이프) 기호로 검색하세요. (예: pine or script)</p>
+        
+        <p class="search-info">'AND'는 공백, 'OR'는 `|` (파이프) 기호로 검색. (예: '흰색 또는 회색 강아지' 검색 시 → `강아지 흰색|회색`)</p>
+        
         <button id="playSelectedButton" class="hidden">
             <span>▶️ 선택한 영상 연속 재생 (새 탭에서 열기)</span>
             <span id="videoCount"></span>
