@@ -178,7 +178,8 @@ async function performSearch() {
             if (endDate.value) searchParams.set("publishedBefore", new Date(endDate.value).toISOString());
         } else if (dateValue !== "all") {
             const afterDate = new Date();
-            if (dateValue === "day") afterDate.setDate(afterDate.getDate - 1);
+            // 🔽 (수정) getDate()로 수정
+            if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1); 
             if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
             if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
             if (dateValue === "year") afterDate.setFullYear(afterDate.getFullYear() - 1);
