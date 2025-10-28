@@ -1,4 +1,4 @@
-// DOM 요소 가져오기 (기존)
+// (기존) DOM 요소
 const searchButton = document.getElementById("searchButton");
 const searchTerm = document.getElementById("searchTerm");
 const resultsDiv = document.getElementById("results");
@@ -8,19 +8,21 @@ const selectAllContainer = document.getElementById("selectAllContainer");
 const selectAllCheckbox = document.getElementById("selectAllCheckbox");
 const videoCountSpan = document.getElementById("videoCount");
 
-// 필터 요소 (기존)
+// (기존) 필터 요소
 const dateFilter = document.getElementById("dateFilter");
 const customDateInputs = document.getElementById("customDateInputs");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 const durationFilter = document.getElementById("durationFilter");
+// ⭐️ (추가) 비율 필터 요소
+const aspectRatioFilter = document.getElementById("aspectRatioFilter");
 
 // (기존) 통계 필터 요소
 const minViewsInput = document.getElementById("minViews");
 const minLikesInput = document.getElementById("minLikes");
 const minSubscribersInput = document.getElementById("minSubscribers");
 
-// 설정 패널 요소 (기존)
+// (기존) 설정 패널 요소
 const toggleSettingsButton = document.getElementById("toggleSettingsButton");
 const settingsPanel = document.getElementById("settingsPanel");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
@@ -116,17 +118,31 @@ resultsDiv.addEventListener("change", (event) => {
     }
 });
 
+// ⭐️ (추가) ISO 8601 재생시간(PT4M13S)을 초로 변환하는 함수
+function parseISO8601Duration(durationString) {
+    if (!durationString) return 0;
+    const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
+    const matches = durationString.match(regex);
+    if (!matches) return 0;
+    
+    // (matches[1] || 0) -> 시간(H)
+    // (matches[2] || 0) -> 분(M)
+    // (matches[3] || 0) -> 초(S)
+    const hours = Number(matches[1] || 0);
+    const minutes = Number(matches[2] || 0);
+    const seconds = Number(matches[3] || 0);
+    
+    return (hours * 3600) + (minutes * 60) + seconds;
+}
 
-// (기존) YouTube API 검색 실행
+
+// ⭐️ YouTube API 검색 실행 (수정) ⭐️
 async function performSearch() {
     const API_KEY = apiKeyInput.value; 
     let query = searchTerm.value;
     
-    if (!query) {
-        alert("검색어를 입력하세요.");
-        return;
-    }
-    
+    // (기존) 입력값 검증
+    if (!query) { alert("검색어를 입력하세요."); return; }
     if (!API_KEY || API_KEY === "" || API_KEY.startsWith("AIzaSy...")) {
         alert("⚙️ 설정 패널에서 유효한 YouTube API 키를 입력하고 '설정 저장'을 눌러주세요.");
         settingsPanel.classList.remove("hidden"); 
@@ -136,6 +152,7 @@ async function performSearch() {
 
     query = query.replace(/\s+or\s+/gi, " | ").replace(/\s+and\s+/gi, " ");
 
+    // (기존) 로딩 UI
     resultsDiv.innerHTML = "";
     videoCountSpan.textContent = ""; 
     loadingDiv.classList.remove("hidden");
@@ -153,7 +170,7 @@ async function performSearch() {
             maxResults: 50, 
             key: API_KEY
         });
-
+        
         // (기존) 날짜/길이 필터 적용
         const dateValue = dateFilter.value;
         if (dateValue === "custom") {
@@ -161,7 +178,7 @@ async function performSearch() {
             if (endDate.value) searchParams.set("publishedBefore", new Date(endDate.value).toISOString());
         } else if (dateValue !== "all") {
             const afterDate = new Date();
-            if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1);
+            if (dateValue === "day") afterDate.setDate(afterDate.getDate - 1);
             if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
             if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
             if (dateValue === "year") afterDate.setFullYear(afterDate.getFullYear() - 1);
@@ -180,10 +197,11 @@ async function performSearch() {
             return;
         }
 
-        // --- 2단계: 영상 통계 (Videos: list - 조회수, 좋아요) ---
+        // --- 2단계: 영상 통계 (Videos: list - 조회수, 좋아요, ⭐️재생시간) ---
         const videoIds = searchData.items.map(item => item.id.videoId).join(',');
         const videoParams = new URLSearchParams({
-            part: "statistics",
+            // ⭐️ (수정) statistics, contentDetails (재생 시간 포함)
+            part: "statistics,contentDetails", 
             id: videoIds,
             key: API_KEY
         });
@@ -191,9 +209,10 @@ async function performSearch() {
         if (!videoStatsResponse.ok) throw await createError(videoStatsResponse, "2. 영상 통계");
 
         const videoStatsData = await videoStatsResponse.json();
-        const videoStatsMap = new Map(videoStatsData.items.map(item => [item.id, item.statistics]));
+        // ⭐️ (수정) 통계/재생시간 정보가 담긴 'item' 전체를 Map에 저장
+        const videoDetailsMap = new Map(videoStatsData.items.map(item => [item.id, item]));
 
-        // --- 3단계: 채널 통계 (Channels: list - 구독자) ---
+        // --- 3단계: 채널 통계 (Channels: list - 구독자) --- (기존과 동일)
         const channelIds = [...new Set(searchData.items.map(item => item.snippet.channelId))].join(',');
         const channelParams = new URLSearchParams({
             part: "statistics",
@@ -206,24 +225,28 @@ async function performSearch() {
         const channelStatsData = await channelStatsResponse.json();
         const channelStatsMap = new Map(channelStatsData.items.map(item => [item.id, item.statistics]));
 
-        // --- 4단계: 데이터 병합 ---
+        // --- 4단계: 데이터 병합 --- (⭐️재생시간 추가)
         const mergedItems = searchData.items.map(item => {
-            const videoStats = videoStatsMap.get(item.id.videoId) || {};
+            // ⭐️ (수정) videoDetailsMap에서 item 전체를 가져옴
+            const videoData = videoDetailsMap.get(item.id.videoId) || {};
+            const videoStats = videoData.statistics || {};
+            const videoContent = videoData.contentDetails || {}; // ⭐️ 재생 시간 정보
             const channelStats = channelStatsMap.get(item.snippet.channelId) || {};
+            
             return {
                 ...item,
-                statistics: {
-                    // ⭐️ (수정) parseInt -> Number
+                statistics: { // (기존) 통계
                     viewCount: Number(videoStats.viewCount || 0),
-                    // ⭐️ (수정) parseInt -> Number
                     likeCount: Number(videoStats.likeCount || 0),
-                    // ⭐️ (수정) parseInt -> Number
                     subscriberCount: channelStats.hiddenSubscriberCount ? 0 : Number(channelStats.subscriberCount || 0)
+                },
+                contentDetails: { // ⭐️ (추가) 재생 시간
+                    duration: videoContent.duration || "PT0S" 
                 }
             };
         });
         
-        // --- 5단계: 클라이언트 측 필터링 (기피 + 통계) ---
+        // --- 5단계: 클라이언트 측 필터링 (기피 + 통계 + ⭐️비율) ---
         const filteredResults = filterClientSide(mergedItems);
 
         // --- 6단계: 결과 표시 ---
@@ -250,16 +273,19 @@ async function createError(response, step) {
 }
 
 
-// ⭐️ 기피/통계 필터링 함수 (수정) ⭐️
+// ⭐️ 기피/통계/비율 필터링 함수 (수정) ⭐️
 function filterClientSide(items) {
     // (기존) 기피 필터
     const avoidKeywords = avoidKeywordsInput.value.split(",").map(k => k.trim().toLowerCase()).filter(k => k);
     const avoidChannels = avoidChannelsInput.value.split(",").map(c => c.trim().toLowerCase()).filter(c => c);
 
-    // ⭐️ (수정) 통계 필터: parseInt -> Number
+    // (기존) 통계 필터
     const minViews = Number(minViewsInput.value) || 0;
     const minLikes = Number(minLikesInput.value) || 0;
     const minSubscribers = Number(minSubscribersInput.value) || 0;
+
+    // ⭐️ (추가) 비율(시간) 필터
+    const aspectRatio = aspectRatioFilter.value; // 'any', 'wide', 'short'
 
     return items.filter(item => {
         // (기존) 기피 필터링
@@ -268,11 +294,22 @@ function filterClientSide(items) {
         if (avoidKeywords.some(keyword => title.includes(keyword))) return false;
         if (avoidChannels.some(channelName => channel.includes(channelName))) return false;
         
-        // (기존) 통계 필터링 (로직은 동일)
+        // (기존) 통계 필터링
         const stats = item.statistics;
         if (minViews > 0 && stats.viewCount < minViews) return false;
         if (minLikes > 0 && stats.likeCount < minLikes) return false;
         if (minSubscribers > 0 && stats.subscriberCount < minSubscribers) return false;
+
+        // ⭐️ (추가) 비율(시간) 필터링
+        if (aspectRatio !== 'any') {
+            const durationInSeconds = parseISO8601Duration(item.contentDetails.duration);
+            
+            // "좁은 영상"(Shorts)을 선택했는데 61초를 초과하면 탈락
+            if (aspectRatio === 'short' && durationInSeconds > 61) return false;
+            
+            // "넓은 영상"(일반)을 선택했는데 61초 이하면 탈락
+            if (aspectRatio === 'wide' && durationInSeconds <= 61) return false;
+        }
 
         return true;
     });

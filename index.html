@@ -55,12 +55,21 @@
             </div>
             
             <div class="filter-group">
-                <label for="durationFilter">⏱️ 영상 길이</label>
+                <label for="durationFilter">⏱️ 영상 길이 (API 기준)</label>
                 <select id="durationFilter">
                     <option value="any">제한 없음</option>
                     <option value="short">Short (4분 미만)</option>
                     <option value="medium">Medium (4~20분)</option>
                     <option value="long">Long (20분 초과)</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="aspectRatioFilter">📐 영상 비율 (시간 기준)</label>
+                <select id="aspectRatioFilter">
+                    <option value="any">전체 영상</option>
+                    <option value="wide">가로폭이 넓은 영상 (&gt; 61초)</option>
+                    <option value="short">가로폭이 좁은 영상 (≤ 61초)</option>
                 </select>
             </div>
             
