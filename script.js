@@ -90,10 +90,31 @@ playSelectedButton.addEventListener("click", () => {
         return;
     }
     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
+    
+    // ⭐️ (수정) URL 형식을 '현재 재생목록(Queue)'으로 변경
+    const firstVideoId = videoIds[0];
     const videoIdString = videoIds.join(',');
-    const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
+
+    // ⭐️ 'v'에는 첫 번째 영상을, 'list'에는 전체 영상 ID 목록을 전달합니다.
+    // 이렇게 하면 'Untitled List'가 아닌 편집 가능한 '현재 재생목록'으로 열립니다.
+    const playlistUrl = `https://www.youtube.com/watch?v=${firstVideoId}&list=${videoIdString}`;
+    
     window.open(playlistUrl, '_blank');
 });
+
+
+// (기존) 연속 재생 버튼
+// playSelectedButton.addEventListener("click", () => {
+//     const checkedBoxes = document.querySelectorAll(".queue-checkbox:checked");
+//     if (checkedBoxes.length === 0) {
+//         alert("연속 재생할 영상을 1개 이상 선택하세요.");
+//         return;
+//     }
+//     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
+//     const videoIdString = videoIds.join(',');
+//     const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
+//     window.open(playlistUrl, '_blank');
+// });
 
 
 // (기존) 선택 카운터 업데이트
@@ -374,3 +395,4 @@ function displayResults(items) {
 
     updateVideoCount();
 }
+
