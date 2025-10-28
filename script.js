@@ -14,7 +14,6 @@ const customDateInputs = document.getElementById("customDateInputs");
 const startDate = document.getElementById("startDate");
 const endDate = document.getElementById("endDate");
 const durationFilter = document.getElementById("durationFilter");
-// ⭐️ (추가) 비율 필터 요소
 const aspectRatioFilter = document.getElementById("aspectRatioFilter");
 
 // (기존) 통계 필터 요소
@@ -82,7 +81,7 @@ searchTerm.addEventListener("keyup", (event) => {
     if (event.key === "Enter") performSearch();
 });
 
-// (기존) 연속 재생 버튼
+// ⭐️ (수정) 연속 재생 버튼 (청크 로직 제거 -> 단일 탭으로)
 playSelectedButton.addEventListener("click", () => {
     const checkedBoxes = document.querySelectorAll(".queue-checkbox:checked");
     if (checkedBoxes.length === 0) {
@@ -90,40 +89,13 @@ playSelectedButton.addEventListener("click", () => {
         return;
     }
     const videoIds = Array.from(checkedBoxes).map(box => box.dataset.videoId);
-
-    // ⭐️ (수정) 
-    // 원인: YouTube의 'watch_videos' URL은 한 번에 넘길 수 있는 video_id의 수에
-    // 비공식적인 제한이 있는 것으로 보입니다. (사용자 리포트: 40개 전달 시 4개만 표시됨)
-    // 해결: 이 제한을 우회하기 위해, 선택된 ID를 20개씩 나누어(chunk)
-    // 여러 개의 재생목록 탭을 엽니다.
+    const videoIdString = videoIds.join(',');
     
-    const CHUNK_SIZE = 20; // 50개라는 자료도 있으나, 불안정하므로 20개로 제한
-
-    if (videoIds.length > CHUNK_SIZE) {
-        if (!confirm(
-`선택한 영상이 ${videoIds.length}개입니다.
-
-YouTube 임시 재생목록 기능이 한 번에 많은 수의 영상을 처리하지 못하는 문제가 있습니다. (예: 40개 선택 시 4개만 재생됨)
-
-이 문제를 우회하기 위해 ${CHUNK_SIZE}개씩 나누어 총 ${Math.ceil(videoIds.length / CHUNK_SIZE)}개의 새 탭(재생목록)을 여시겠습니까?
-
-(참고: 브라우저가 팝업 창을 여러 개 여는 것을 차단할 수 있습니다. 팝업을 허용해 주세요.)`
-        )) {
-            return; // 사용자가 취소함
-        }
-    }
-
-    // 20개씩 묶어서 URL을 생성하고 새 탭에서 열기
-    for (let i = 0; i < videoIds.length; i += CHUNK_SIZE) {
-        const chunk = videoIds.slice(i, i + CHUNK_SIZE);
-        const videoIdString = chunk.join(',');
-        const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
-        
-        // 팝업 차단을 피하기 위해 각 탭을 열 때 약간의 딜레이를 줄 수도 있으나,
-        // 사용자 클릭 이벤트 내에서 동기적으로 처리하는 것이 팝업 차단 확률이 가장 낮습니다.
-        window.open(playlistUrl, '_blank');
-    }
+    // 20개 이하로 검색되므로, URL 1개로만 호출 (기존 로직으로 복귀)
+    const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIdString}`;
+    window.open(playlistUrl, '_blank');
 });
+
 
 // (기존) 선택 카운터 업데이트
 function updateVideoCount() {
@@ -147,16 +119,13 @@ resultsDiv.addEventListener("change", (event) => {
     }
 });
 
-// ⭐️ (추가) ISO 8601 재생시간(PT4M13S)을 초로 변환하는 함수
+// (기존) ISO 8601 재생시간(PT4M13S)을 초로 변환하는 함수
 function parseISO8601Duration(durationString) {
     if (!durationString) return 0;
     const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
     const matches = durationString.match(regex);
     if (!matches) return 0;
     
-    // (matches[1] || 0) -> 시간(H)
-    // (matches[2] || 0) -> 분(M)
-    // (matches[3] || 0) -> 초(S)
     const hours = Number(matches[1] || 0);
     const minutes = Number(matches[2] || 0);
     const seconds = Number(matches[3] || 0);
@@ -165,7 +134,7 @@ function parseISO8601Duration(durationString) {
 }
 
 
-// ⭐️ YouTube API 검색 실행 (수정) ⭐️
+// (기존) YouTube API 검색 실행
 async function performSearch() {
     const API_KEY = apiKeyInput.value; 
     let query = searchTerm.value;
@@ -196,7 +165,8 @@ async function performSearch() {
             part: "snippet",
             q: query, 
             type: "video",
-            maxResults: 50, 
+            // ⭐️ (수정) 검색 결과 50개 -> 20개로 제한
+            maxResults: 20, 
             key: API_KEY
         });
         
@@ -207,7 +177,7 @@ async function performSearch() {
             if (endDate.value) searchParams.set("publishedBefore", new Date(endDate.value).toISOString());
         } else if (dateValue !== "all") {
             const afterDate = new Date();
-            // 🔽 (수정) getDate()로 수정
+            // (수정된 코드) getDate()
             if (dateValue === "day") afterDate.setDate(afterDate.getDate() - 1); 
             if (dateValue === "week") afterDate.setDate(afterDate.getDate() - 7);
             if (dateValue === "month") afterDate.setMonth(afterDate.getMonth() - 1);
@@ -230,7 +200,6 @@ async function performSearch() {
         // --- 2단계: 영상 통계 (Videos: list - 조회수, 좋아요, ⭐️재생시간) ---
         const videoIds = searchData.items.map(item => item.id.videoId).join(',');
         const videoParams = new URLSearchParams({
-            // ⭐️ (수정) statistics, contentDetails (재생 시간 포함)
             part: "statistics,contentDetails", 
             id: videoIds,
             key: API_KEY
@@ -239,7 +208,6 @@ async function performSearch() {
         if (!videoStatsResponse.ok) throw await createError(videoStatsResponse, "2. 영상 통계");
 
         const videoStatsData = await videoStatsResponse.json();
-        // ⭐️ (수정) 통계/재생시간 정보가 담긴 'item' 전체를 Map에 저장
         const videoDetailsMap = new Map(videoStatsData.items.map(item => [item.id, item]));
 
         // --- 3단계: 채널 통계 (Channels: list - 구독자) --- (기존과 동일)
@@ -255,28 +223,27 @@ async function performSearch() {
         const channelStatsData = await channelStatsResponse.json();
         const channelStatsMap = new Map(channelStatsData.items.map(item => [item.id, item.statistics]));
 
-        // --- 4단계: 데이터 병합 --- (⭐️재생시간 추가)
+        // --- 4단계: 데이터 병합 --- (기존과 동일)
         const mergedItems = searchData.items.map(item => {
-            // ⭐️ (수정) videoDetailsMap에서 item 전체를 가져옴
             const videoData = videoDetailsMap.get(item.id.videoId) || {};
             const videoStats = videoData.statistics || {};
-            const videoContent = videoData.contentDetails || {}; // ⭐️ 재생 시간 정보
+            const videoContent = videoData.contentDetails || {};
             const channelStats = channelStatsMap.get(item.snippet.channelId) || {};
             
             return {
                 ...item,
-                statistics: { // (기존) 통계
+                statistics: {
                     viewCount: Number(videoStats.viewCount || 0),
                     likeCount: Number(videoStats.likeCount || 0),
                     subscriberCount: channelStats.hiddenSubscriberCount ? 0 : Number(channelStats.subscriberCount || 0)
                 },
-                contentDetails: { // ⭐️ (추가) 재생 시간
+                contentDetails: {
                     duration: videoContent.duration || "PT0S" 
                 }
             };
         });
         
-        // --- 5단계: 클라이언트 측 필터링 (기피 + 통계 + ⭐️비율) ---
+        // --- 5단계: 클라이언트 측 필터링 (기존과 동일)
         const filteredResults = filterClientSide(mergedItems);
 
         // --- 6단계: 결과 표시 ---
@@ -303,7 +270,7 @@ async function createError(response, step) {
 }
 
 
-// ⭐️ 기피/통계/비율 필터링 함수 (수정) ⭐️
+// (기존) 기피/통계/비율 필터링 함수
 function filterClientSide(items) {
     // (기존) 기피 필터
     const avoidKeywords = avoidKeywordsInput.value.split(",").map(k => k.trim().toLowerCase()).filter(k => k);
@@ -314,7 +281,7 @@ function filterClientSide(items) {
     const minLikes = Number(minLikesInput.value) || 0;
     const minSubscribers = Number(minSubscribersInput.value) || 0;
 
-    // ⭐️ (추가) 비율(시간) 필터
+    // (기존) 비율(시간) 필터
     const aspectRatio = aspectRatioFilter.value; // 'any', 'wide', 'short'
 
     return items.filter(item => {
@@ -330,14 +297,11 @@ function filterClientSide(items) {
         if (minLikes > 0 && stats.likeCount < minLikes) return false;
         if (minSubscribers > 0 && stats.subscriberCount < minSubscribers) return false;
 
-        // ⭐️ (추가) 비율(시간) 필터링
+        // (기존) 비율(시간) 필터링
         if (aspectRatio !== 'any') {
             const durationInSeconds = parseISO8601Duration(item.contentDetails.duration);
             
-            // "좁은 영상"(Shorts)을 선택했는데 61초를 초과하면 탈락
             if (aspectRatio === 'short' && durationInSeconds > 61) return false;
-            
-            // "넓은 영상"(일반)을 선택했는데 61초 이하면 탈락
             if (aspectRatio === 'wide' && durationInSeconds <= 61) return false;
         }
 
